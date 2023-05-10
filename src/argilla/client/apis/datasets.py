@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, Field
-
+import json
 from argilla.client.apis import AbstractApi, api_compatibility
 from argilla.client.sdk.commons.errors import (
     AlreadyExistsApiError,
@@ -27,8 +27,10 @@ from argilla.client.sdk.commons.errors import (
     ForbiddenApiError,
     NotFoundApiError,
 )
-from argilla.client.sdk.datasets.api import get_dataset
+from argilla.client.sdk.datasets.api import get_dataset, get_datasets
 from argilla.client.sdk.datasets.models import TaskType
+
+from argilla.server.apis.v0.models.commons.params import OptionalWorkspaceRequestDependency
 
 
 @dataclass
@@ -65,6 +67,9 @@ class LabelsSchemaSettings(_AbstractSettings):
         labels = {label["name"] for label in label_schema.get("labels", [])}
         return cls(label_schema=labels)
 
+    def to_json(self):
+        return json.dumps(self, default=list)
+
 
 @dataclass
 class TextClassificationSettings(LabelsSchemaSettings):
@@ -96,6 +101,9 @@ __TASK_TO_SETTINGS__ = {
 }
 
 
+
+
+
 class Datasets(AbstractApi):
     """Dataset client api class"""
 
@@ -119,6 +127,11 @@ class Datasets(AbstractApi):
     def find_by_name(self, name: str) -> _DatasetApiModel:
         dataset = get_dataset(self.http_client, name=name).parsed
         return self._DatasetApiModel.parse_obj(dataset)
+
+    def get_by_workspace(self, workspace_name: str) -> List[_DatasetApiModel]:
+        datasets = get_datasets(self.http_client, workspace_name=workspace_name).parsed
+        return [self._DatasetApiModel.parse_obj(dataset) for dataset in datasets]
+
 
     def create(self, name: str, workspace: str, settings: Settings):
         task = (
@@ -155,14 +168,14 @@ class Datasets(AbstractApi):
             self._save_settings(dataset=ds, settings=settings)
 
     def scan(
-        self,
-        name: str,
-        projection: Optional[Set[str]] = None,
-        limit: Optional[int] = None,
-        sort: Optional[List[Tuple[str, str]]] = None,
-        id_from: Optional[str] = None,
-        batch_size: int = 250,
-        **query,
+            self,
+            name: str,
+            projection: Optional[Set[str]] = None,
+            limit: Optional[int] = None,
+            sort: Optional[List[Tuple[str, str]]] = None,
+            id_from: Optional[str] = None,
+            batch_size: int = 250,
+            **query,
     ) -> Iterable[dict]:
         """
         Search records over a dataset
@@ -234,10 +247,10 @@ class Datasets(AbstractApi):
                 )
 
     def update_record(
-        self,
-        name: str,
-        record_id: str,
-        **content,
+            self,
+            name: str,
+            record_id: str,
+            **content,
     ):
         with api_compatibility(self, min_version="1.2.0"):
             url = f"{self._API_PREFIX}/{name}/records/{record_id}"
@@ -248,11 +261,11 @@ class Datasets(AbstractApi):
             return response
 
     def delete_records(
-        self,
-        name: str,
-        mark_as_discarded: bool = False,
-        discard_when_forbidden: bool = True,
-        **query: Optional[dict],
+            self,
+            name: str,
+            mark_as_discarded: bool = False,
+            discard_when_forbidden: bool = True,
+            **query: Optional[dict],
     ) -> Tuple[int, int]:
         """
         Tries to delete records in a dataset for a given query/ids list.

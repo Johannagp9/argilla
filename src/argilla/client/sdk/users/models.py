@@ -26,3 +26,5 @@ class User(BaseModel):
     disabled: Optional[bool] = None
     api_key: Optional[str]  # backward compatibility
     workspaces: List[str] = None
+
+

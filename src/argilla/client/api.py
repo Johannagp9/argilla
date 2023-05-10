@@ -14,6 +14,7 @@
 #  limitations under the License.
 import asyncio
 import logging
+import json
 import warnings
 from asyncio import Future
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
@@ -47,12 +48,12 @@ class ArgillaSingleton:
 
     @classmethod
     def init(
-        cls,
-        api_url: Optional[str] = None,
-        api_key: Optional[str] = None,
-        workspace: Optional[str] = None,
-        timeout: int = 60,
-        extra_headers: Optional[Dict[str, str]] = None,
+            cls,
+            api_url: Optional[str] = None,
+            api_key: Optional[str] = None,
+            workspace: Optional[str] = None,
+            timeout: int = 60,
+            extra_headers: Optional[Dict[str, str]] = None,
     ) -> Argilla:
         cls._INSTANCE = None
 
@@ -68,11 +69,11 @@ class ArgillaSingleton:
 
 
 def init(
-    api_url: Optional[str] = None,
-    api_key: Optional[str] = None,
-    workspace: Optional[str] = None,
-    timeout: int = 60,
-    extra_headers: Optional[Dict[str, str]] = None,
+        api_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+        workspace: Optional[str] = None,
+        timeout: int = 60,
+        extra_headers: Optional[Dict[str, str]] = None,
 ):
     """Init the Python client.
 
@@ -109,17 +110,17 @@ def init(
 
 
 def log(
-    records: Union[Record, Iterable[Record], Dataset],
-    name: str,
-    workspace: Optional[str] = None,
-    tags: Optional[Dict[str, str]] = None,
-    metadata: Optional[Dict[str, Any]] = None,
-    batch_size: int = 100,
-    verbose: bool = True,
-    background: bool = False,
-    chunk_size: Optional[int] = None,
-    num_threads: int = 0,
-    max_retries: int = 3,
+        records: Union[Record, Iterable[Record], Dataset],
+        name: str,
+        workspace: Optional[str] = None,
+        tags: Optional[Dict[str, str]] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        batch_size: int = 100,
+        verbose: bool = True,
+        background: bool = False,
+        chunk_size: Optional[int] = None,
+        num_threads: int = 0,
+        max_retries: int = 3,
 ) -> Union[BulkResponse, Future]:
     """Logs Records to argilla.
 
@@ -176,14 +177,14 @@ def log(
 
 
 async def log_async(
-    records: Union[Record, Iterable[Record], Dataset],
-    name: str,
-    workspace: Optional[str] = None,
-    tags: Optional[Dict[str, str]] = None,
-    metadata: Optional[Dict[str, Any]] = None,
-    batch_size: int = 100,
-    verbose: bool = True,
-    chunk_size: Optional[int] = None,
+        records: Union[Record, Iterable[Record], Dataset],
+        name: str,
+        workspace: Optional[str] = None,
+        tags: Optional[Dict[str, str]] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        batch_size: int = 100,
+        verbose: bool = True,
+        chunk_size: Optional[int] = None,
 ) -> BulkResponse:
     """Logs Records to argilla with asyncio.
 
@@ -234,18 +235,18 @@ async def log_async(
 
 
 def load(
-    name: str,
-    workspace: Optional[str] = None,
-    query: Optional[str] = None,
-    vector: Optional[Tuple[str, List[float]]] = None,
-    ids: Optional[List[Union[str, int]]] = None,
-    limit: Optional[int] = None,
-    sort: Optional[List[Tuple[str, str]]] = None,
-    id_from: Optional[str] = None,
-    batch_size: int = 250,
-    include_vectors: bool = True,
-    include_metrics: bool = True,
-    as_pandas=None,
+        name: str,
+        workspace: Optional[str] = None,
+        query: Optional[str] = None,
+        vector: Optional[Tuple[str, List[float]]] = None,
+        ids: Optional[List[Union[str, int]]] = None,
+        limit: Optional[int] = None,
+        sort: Optional[List[Tuple[str, str]]] = None,
+        id_from: Optional[str] = None,
+        batch_size: int = 250,
+        include_vectors: bool = True,
+        include_metrics: bool = True,
+        as_pandas=None,
 ) -> Dataset:
     """Loads a argilla dataset.
 
@@ -310,9 +311,9 @@ def load(
 
 
 def copy(
-    dataset: str,
-    name_of_copy: str,
-    workspace: str = None,
+        dataset: str,
+        name_of_copy: str,
+        workspace: str = None,
 ):
     """
     Creates a copy of a dataset including its tags and metadata
@@ -351,12 +352,12 @@ def delete(name: str, workspace: Optional[str] = None):
 
 
 def delete_records(
-    name: str,
-    workspace: Optional[str] = None,
-    query: Optional[str] = None,
-    ids: Optional[List[Union[str, int]]] = None,
-    discard_only: bool = False,
-    discard_when_forbidden: bool = True,
+        name: str,
+        workspace: Optional[str] = None,
+        query: Optional[str] = None,
+        ids: Optional[List[Union[str, int]]] = None,
+        discard_only: bool = False,
+        discard_when_forbidden: bool = True,
 ) -> Tuple[int, int]:
     """Delete records from a argilla dataset.
 
@@ -420,6 +421,22 @@ def active_client() -> Argilla:
     If Active client is None, initialize a default one.
     """
     return ArgillaSingleton.get()
+
+
+def whoami() -> Dict:
+    return ArgillaSingleton.get().whoami()
+
+
+def get_datasets():
+    return ArgillaSingleton.get().get_datasets()
+
+
+def get_dataset(name: str):
+    return ArgillaSingleton.get().get_dataset(name)
+
+
+def get_dataset_settings(name: str):
+    return ArgillaSingleton.get().get_dataset_settings(name)
 
 
 active_api = active_client  # backward compatibility

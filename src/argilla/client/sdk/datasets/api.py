@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 from functools import lru_cache
-from typing import Union
+from typing import Union, List
 
 import httpx
 
@@ -29,8 +29,8 @@ from argilla.client.sdk.datasets.models import CopyDatasetRequest, Dataset
 
 @lru_cache(maxsize=None)
 def get_dataset(
-    client: AuthenticatedClient,
-    name: str,
+        client: AuthenticatedClient,
+        name: str,
 ) -> Response[Dataset]:
     url = "{}/api/datasets/{name}".format(client.base_url, name=name)
 
@@ -44,10 +44,30 @@ def get_dataset(
     return _build_response(response=response, name=name)
 
 
+def get_datasets(client: AuthenticatedClient, workspace_name: str) -> Response[List[Dataset]]:
+    url = "{}/api/datasets/".format(client.base_url)
+    response = httpx.get(
+        url=url,
+        headers=client.get_headers(),
+        cookies=client.get_cookies(),
+        timeout=client.get_timeout(),
+    )
+    if response.status_code == 200:
+        parsed_response = [Dataset(**dataset) for dataset in response.json() if dataset["workspace"] == workspace_name]
+        print(parsed_response)
+        return Response(
+            status_code=response.status_code,
+            content=response.content,
+            headers=response.headers,
+            parsed=parsed_response,
+        )
+    return handle_response_error(response)
+
+
 def copy_dataset(
-    client: AuthenticatedClient,
-    name: str,
-    json_body: CopyDatasetRequest,
+        client: AuthenticatedClient,
+        name: str,
+        json_body: CopyDatasetRequest,
 ) -> Response[Dataset]:
     url = "{}/api/datasets/{name}:copy".format(client.base_url, name=name)
 
@@ -63,8 +83,8 @@ def copy_dataset(
 
 
 def delete_dataset(
-    client: AuthenticatedClient,
-    name: str,
+        client: AuthenticatedClient,
+        name: str,
 ) -> httpx.Response:
     url = "{}/api/datasets/{name}".format(client.base_url, name=name)
 

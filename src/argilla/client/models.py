@@ -31,6 +31,7 @@ from argilla import _messages
 from argilla._constants import DEFAULT_MAX_KEYWORD_LENGTH
 from argilla.utils.span_utils import SpanUtils
 
+
 _LOGGER = logging.getLogger(__name__)
 
 Vectors = Dict[str, List[float]]
@@ -144,6 +145,8 @@ class BulkResponse(BaseModel):
     dataset: str
     processed: int
     failed: Optional[int] = 0
+
+
 
 
 class TokenAttributions(BaseModel):

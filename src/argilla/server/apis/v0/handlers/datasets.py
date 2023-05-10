@@ -46,9 +46,9 @@ router = APIRouter(tags=["datasets"], prefix="/datasets")
     operation_id="list_datasets",
 )
 async def list_datasets(
-    workspace_request: OptionalWorkspaceRequestDependency = Depends(),
-    service: DatasetsService = Depends(DatasetsService.get_instance),
-    current_user: User = Security(auth.get_current_user),
+        workspace_request: OptionalWorkspaceRequestDependency = Depends(),
+        service: DatasetsService = Depends(DatasetsService.get_instance),
+        current_user: User = Security(auth.get_current_user),
 ) -> List[Dataset]:
     datasets = service.list(
         user=current_user,
@@ -67,10 +67,10 @@ async def list_datasets(
     description="Create a new dataset",
 )
 async def create_dataset(
-    request: CreateDatasetRequest = Body(..., description="The request dataset info"),
-    ws_params: CommonTaskHandlerDependencies = Depends(),
-    datasets: DatasetsService = Depends(DatasetsService.get_instance),
-    current_user: User = Security(auth.get_current_user),
+        request: CreateDatasetRequest = Body(..., description="The request dataset info"),
+        ws_params: CommonTaskHandlerDependencies = Depends(),
+        datasets: DatasetsService = Depends(DatasetsService.get_instance),
+        current_user: User = Security(auth.get_current_user),
 ) -> Dataset:
     request.workspace = request.workspace or ws_params.workspace
     dataset = datasets.create_dataset(user=current_user, dataset=request)
@@ -85,10 +85,10 @@ async def create_dataset(
     operation_id="get_dataset",
 )
 def get_dataset(
-    name: str,
-    ds_params: CommonTaskHandlerDependencies = Depends(),
-    service: DatasetsService = Depends(DatasetsService.get_instance),
-    current_user: User = Security(auth.get_current_user),
+        name: str,
+        ds_params: CommonTaskHandlerDependencies = Depends(),
+        service: DatasetsService = Depends(DatasetsService.get_instance),
+        current_user: User = Security(auth.get_current_user),
 ) -> Dataset:
     return Dataset.from_orm(
         service.find_by_name(
@@ -106,11 +106,11 @@ def get_dataset(
     response_model_exclude_none=True,
 )
 def update_dataset(
-    name: str,
-    request: UpdateDatasetRequest,
-    ds_params: CommonTaskHandlerDependencies = Depends(),
-    service: DatasetsService = Depends(DatasetsService.get_instance),
-    current_user: User = Security(auth.get_current_user),
+        name: str,
+        request: UpdateDatasetRequest,
+        ds_params: CommonTaskHandlerDependencies = Depends(),
+        service: DatasetsService = Depends(DatasetsService.get_instance),
+        current_user: User = Security(auth.get_current_user),
 ) -> Dataset:
     found_ds = service.find_by_name(user=current_user, name=name, workspace=ds_params.workspace)
 
@@ -129,10 +129,10 @@ def update_dataset(
     operation_id="delete_dataset",
 )
 def delete_dataset(
-    name: str,
-    ds_params: CommonTaskHandlerDependencies = Depends(),
-    service: DatasetsService = Depends(DatasetsService.get_instance),
-    current_user: User = Security(auth.get_current_user),
+        name: str,
+        ds_params: CommonTaskHandlerDependencies = Depends(),
+        service: DatasetsService = Depends(DatasetsService.get_instance),
+        current_user: User = Security(auth.get_current_user),
 ):
     try:
         found_ds = service.find_by_name(
@@ -153,10 +153,10 @@ def delete_dataset(
     operation_id="close_dataset",
 )
 def close_dataset(
-    name: str,
-    ds_params: CommonTaskHandlerDependencies = Depends(),
-    service: DatasetsService = Depends(DatasetsService.get_instance),
-    current_user: User = Security(auth.get_current_user),
+        name: str,
+        ds_params: CommonTaskHandlerDependencies = Depends(),
+        service: DatasetsService = Depends(DatasetsService.get_instance),
+        current_user: User = Security(auth.get_current_user),
 ):
     found_ds = service.find_by_name(user=current_user, name=name, workspace=ds_params.workspace)
     service.close(user=current_user, dataset=found_ds)
@@ -167,10 +167,10 @@ def close_dataset(
     operation_id="open_dataset",
 )
 def open_dataset(
-    name: str,
-    ds_params: CommonTaskHandlerDependencies = Depends(),
-    service: DatasetsService = Depends(DatasetsService.get_instance),
-    current_user: User = Security(auth.get_current_user),
+        name: str,
+        ds_params: CommonTaskHandlerDependencies = Depends(),
+        service: DatasetsService = Depends(DatasetsService.get_instance),
+        current_user: User = Security(auth.get_current_user),
 ):
     found_ds = service.find_by_name(user=current_user, name=name, workspace=ds_params.workspace)
     service.open(user=current_user, dataset=found_ds)
@@ -183,11 +183,11 @@ def open_dataset(
     response_model_exclude_none=True,
 )
 def copy_dataset(
-    name: str,
-    copy_request: CopyDatasetRequest,
-    ds_params: CommonTaskHandlerDependencies = Depends(),
-    service: DatasetsService = Depends(DatasetsService.get_instance),
-    current_user: User = Security(auth.get_current_user),
+        name: str,
+        copy_request: CopyDatasetRequest,
+        ds_params: CommonTaskHandlerDependencies = Depends(),
+        service: DatasetsService = Depends(DatasetsService.get_instance),
+        current_user: User = Security(auth.get_current_user),
 ) -> Dataset:
     found = service.find_by_name(user=current_user, name=name, workspace=ds_params.workspace)
     dataset = service.copy_dataset(

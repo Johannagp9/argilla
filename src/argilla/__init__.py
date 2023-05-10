@@ -48,6 +48,7 @@ if _TYPE_CHECKING:
         log,
         log_async,
         set_workspace,
+        whoami,
     )
     from argilla.client.datasets import (
         DatasetForText2Text,
@@ -86,6 +87,10 @@ _import_structure = {
         "log_async",
         "set_workspace",
         "active_client",
+        "whoami",
+        "get_datasets",
+        "get_dataset",
+        "get_dataset_settings",
     ],
     "client.models": [
         "Text2TextRecord",

@@ -154,7 +154,6 @@ class DatasetsService:
             workspace_names = workspaces
         else:  # no workspaces
             workspace_names = accessible_workspace_names
-
         return self.__dao__.list_datasets(workspaces=workspace_names, task2dataset_map=task2dataset_map)
 
     def close(self, user: User, dataset: ServiceDataset):

@@ -50,6 +50,10 @@ class WorkspacePolicy:
     def delete(cls, workspace: Workspace) -> PolicyAction:
         return lambda actor: actor.role == UserRole.admin
 
+    @classmethod
+    def get(cls, workspace: Workspace):
+        return lambda actor: actor.is_admin or workspace.name
+
 
 class UserPolicy:
     @classmethod

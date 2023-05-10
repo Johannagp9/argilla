@@ -11,8 +11,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
-
+import dataclasses
+import json
 import logging
 import os
 import re
@@ -87,6 +87,7 @@ from argilla.client.sdk.token_classification.models import (
 from argilla.client.sdk.users import api as users_api
 from argilla.client.sdk.users.models import User
 from argilla.utils import setup_loop_in_thread
+from argilla.client.sdk.workspaces.api import get_workspace
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -100,12 +101,12 @@ class Argilla:
     _MAX_BATCH_SIZE = 5000
 
     def __init__(
-        self,
-        api_url: Optional[str] = None,
-        api_key: Optional[str] = None,
-        workspace: Optional[str] = None,
-        timeout: int = 120,
-        extra_headers: Optional[Dict[str, str]] = None,
+            self,
+            api_url: Optional[str] = None,
+            api_key: Optional[str] = None,
+            workspace: Optional[str] = None,
+            timeout: int = 120,
+            extra_headers: Optional[Dict[str, str]] = None,
     ):
         """
 
@@ -176,6 +177,13 @@ class Argilla:
         """The current connected user"""
         return self._user
 
+    def whoami(self) -> Dict:
+        return {
+            "user_info": self._user,
+            "workspaces": self.get_workspaces(),
+            "datasets": self.get_datasets()
+        }
+
     def set_workspace(self, workspace: str):
         """Sets the active workspace.
 
@@ -208,6 +216,36 @@ class Argilla:
         """
         return self._client.headers.get(WORKSPACE_HEADER_NAME)
 
+    def get_dataset_settings(self, dataset_name: str):
+        return self.datasets.load_settings(name=dataset_name)
+
+    def get_dataset(self, dataset_name: str) -> Dict:
+        return {
+            dataset_name: {
+                "dataset_info": self.datasets.find_by_name(name=dataset_name),
+                "dataset_settings": self.get_dataset_settings(dataset_name=dataset_name)
+            }
+        }
+
+    def get_datasets(self, workspace_name: str = None):
+        workspace_name = workspace_name if workspace_name else self.get_workspace()
+        datasets = []
+        for dataset in self.datasets.get_by_workspace(workspace_name):
+            datasets.append(json.loads(json.dumps(self.get_dataset(dataset.name))))
+        return {workspace_name: datasets}
+
+    def get_workspaces(self):
+        workspaces_names = [workspace_name for workspace_name in self.user.workspaces]
+        return [self.get_complete_workspace(workspace_name) for workspace_name in workspaces_names]
+
+    def get_complete_workspace(self, workspace_name: str = None):
+        workspace_name = workspace_name if workspace_name else self.get_workspace()
+        return {
+            self.get_workspace(): {
+                "workspace_info": get_workspace(self._client, workspace_name),
+                "datasets": self.get_datasets(workspace_name)
+            }}
+
     def copy(self, dataset: str, name_of_copy: str, workspace: str = None):
         """Creates a copy of a dataset including its tags and metadata
 
@@ -235,18 +273,18 @@ class Argilla:
         datasets_api.delete_dataset(client=self._client, name=name)
 
     def log(
-        self,
-        records: Union[Record, Iterable[Record], Dataset],
-        name: str,
-        workspace: Optional[str] = None,
-        tags: Optional[Dict[str, str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        batch_size: int = 100,
-        verbose: bool = True,
-        background: bool = False,
-        num_threads: int = 0,
-        max_retries: int = 3,
-        chunk_size: Optional[int] = None,
+            self,
+            records: Union[Record, Iterable[Record], Dataset],
+            name: str,
+            workspace: Optional[str] = None,
+            tags: Optional[Dict[str, str]] = None,
+            metadata: Optional[Dict[str, Any]] = None,
+            batch_size: int = 100,
+            verbose: bool = True,
+            background: bool = False,
+            num_threads: int = 0,
+            max_retries: int = 3,
+            chunk_size: Optional[int] = None,
     ) -> Union[BulkResponse, Future]:
         """Logs Records to argilla.
 
@@ -349,7 +387,7 @@ class Argilla:
         with Progress() as progress_bar:
             task = progress_bar.add_task("Logging...", total=len(records), visible=verbose)
 
-            batches = [records[i : i + batch_size] for i in range(0, len(records), batch_size)]
+            batches = [records[i: i + batch_size] for i in range(0, len(records), batch_size)]
 
             @backoff.on_exception(
                 backoff.expo,
@@ -393,13 +431,13 @@ class Argilla:
         return BulkResponse(dataset=name, processed=processed, failed=failed)
 
     def delete_records(
-        self,
-        name: str,
-        workspace: Optional[str] = None,
-        query: Optional[str] = None,
-        ids: Optional[List[Union[str, int]]] = None,
-        discard_only: bool = False,
-        discard_when_forbidden: bool = True,
+            self,
+            name: str,
+            workspace: Optional[str] = None,
+            query: Optional[str] = None,
+            ids: Optional[List[Union[str, int]]] = None,
+            discard_only: bool = False,
+            discard_when_forbidden: bool = True,
     ) -> Tuple[int, int]:
         """Delete records from a argilla dataset.
 
@@ -432,19 +470,19 @@ class Argilla:
         )
 
     def load(
-        self,
-        name: str,
-        workspace: Optional[str] = None,
-        query: Optional[str] = None,
-        vector: Optional[Tuple[str, List[float]]] = None,
-        ids: Optional[List[Union[str, int]]] = None,
-        limit: Optional[int] = None,
-        sort: Optional[List[Tuple[str, str]]] = None,
-        id_from: Optional[str] = None,
-        batch_size: int = 250,
-        include_vectors: bool = True,
-        include_metrics: bool = True,
-        as_pandas=None,
+            self,
+            name: str,
+            workspace: Optional[str] = None,
+            query: Optional[str] = None,
+            vector: Optional[Tuple[str, List[float]]] = None,
+            ids: Optional[List[Union[str, int]]] = None,
+            limit: Optional[int] = None,
+            sort: Optional[List[Tuple[str, str]]] = None,
+            id_from: Optional[str] = None,
+            batch_size: int = 250,
+            include_vectors: bool = True,
+            include_metrics: bool = True,
+            as_pandas=None,
     ) -> Dataset:
         """Loads a argilla dataset.
 
@@ -515,12 +553,12 @@ class Argilla:
                 return metric_
 
     def compute_metric(
-        self,
-        name: str,
-        metric: str,
-        query: Optional[str] = None,
-        interval: Optional[float] = None,
-        size: Optional[int] = None,
+            self,
+            name: str,
+            metric: str,
+            query: Optional[str] = None,
+            interval: Optional[float] = None,
+            size: Optional[int] = None,
     ) -> MetricResults:
         response = datasets_api.get_dataset(self._client, name)
 
@@ -554,9 +592,9 @@ class Argilla:
                 _LOGGER.warning(f"Cannot create rule {rule}: {ex}")
 
     def update_dataset_labeling_rules(
-        self,
-        dataset: str,
-        rules: List[LabelingRule],
+            self,
+            dataset: str,
+            rules: List[LabelingRule],
     ):
         """Updates the dataset labeling rules"""
         for rule in rules:
@@ -595,17 +633,17 @@ class Argilla:
         return LabelingRuleMetricsSummary.parse_obj(response.parsed)
 
     def _load_records_internal(
-        self,
-        name: str,
-        query: Optional[str] = None,
-        vector: Optional[Tuple[str, List[float]]] = None,
-        ids: Optional[List[Union[str, int]]] = None,
-        limit: Optional[int] = None,
-        sort: Optional[List[Tuple[str, str]]] = None,
-        id_from: Optional[str] = None,
-        batch_size: int = 250,
-        include_vectors: bool = True,
-        include_metrics: bool = True,
+            self,
+            name: str,
+            query: Optional[str] = None,
+            vector: Optional[Tuple[str, List[float]]] = None,
+            ids: Optional[List[Union[str, int]]] = None,
+            limit: Optional[int] = None,
+            sort: Optional[List[Tuple[str, str]]] = None,
+            id_from: Optional[str] = None,
+            batch_size: int = 250,
+            include_vectors: bool = True,
+            include_metrics: bool = True,
     ) -> Dataset:
         dataset = self.datasets.find_by_name(name=name)
         task = dataset.task
